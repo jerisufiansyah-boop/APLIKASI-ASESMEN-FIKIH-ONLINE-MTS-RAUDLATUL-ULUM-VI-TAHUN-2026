@@ -1,0 +1,2090 @@
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { 
+  BookOpen, Award, CheckCircle2, AlertCircle, Clock, Check, X, Bookmark, 
+  HelpCircle, Shield, LogIn, LogOut, BarChart3, PieChart, Users, Download, 
+  Printer, Search, Trash2, RefreshCw, Eye, Star, ChevronRight, ChevronLeft, 
+  GraduationCap, Sparkles, FileSpreadsheet, Lock, AlertTriangle, Layers, Home
+} from 'lucide-react';
+
+// --- DATABASE 50 SOAL FIKIH MTS (LENGKAP & TERACAK SECARA SISTEMATIS) ---
+const QUESTIONS_DATA = [
+  // THAHARAH (10 Soal)
+  {
+    id: 1,
+    category: "Thaharah",
+    question: "Secara bahasa thaharah berarti bersuci. Menurut istilah fikih, thaharah merujuk pada kegiatan membersihkan diri dari...",
+    options: [
+      "Najis dan kotoran fisik semata tanpa aturan niat",
+      "Hadas dan najis yang menghalangi keabsahan ibadah seperti shalat",
+      "Penyakit hati seperti iri, dengki, dan sombong",
+      "Keringat dan debu setelah beraktivitas harian",
+      "Dosa-dosa kecil yang dilakukan sehari-hari"
+    ],
+    answer: 1 // Index 1 = B
+  },
+  {
+    id: 2,
+    category: "Thaharah",
+    question: "Air mutanajjis adalah air yang terkena najis. Bagaimanakah hukum menggunakannya untuk berwudhu jika air tersebut berjumlah kurang dari dua qullah dan berubah baunya?",
+    options: [
+      "Boleh jika dalam keadaan darurat",
+      "Makruh tetapi wudhu tetap sah",
+      "Tidak sah dan tidak boleh digunakan bersuci",
+      "Sunnah karena sudah tercampur",
+      "Boleh dengan syarat dibaca selawat terlebih dahulu"
+    ],
+    answer: 2
+  },
+  {
+    id: 3,
+    category: "Thaharah",
+    question: "Seorang siswa terkena jilatan anjing pada bagian kakinya. Cara menyucikan najis mughallazhah tersebut sesuai syariat adalah...",
+    options: [
+      "Cukup memercikkan air bersih ke bagian yang terkena jilatan",
+      "Mencuci dengan air bersih sebanyak 3 kali hingga baunya hilang",
+      "Mencuci 7 kali, salah satu di antaranya dicampur dengan tanah yang suci",
+      "Mengusapkan debu muthahharah sebanyak 3 kali pengusapan",
+      "Direndam dalam air sabun hangat selama 15 menit"
+    ],
+    answer: 2
+  },
+  {
+    id: 4,
+    category: "Thaharah",
+    question: "Seseorang yang sedang berhadas besar hendak bersuci agar dapat melaksanakan shalat. Tata cara bersuci yang wajib dilakukan adalah...",
+    options: [
+      "Mandi wajib (mandi janabah) dengan membasahi seluruh tubuh beserta niat",
+      "Wudhu sempurna lalu membasahi kepala tiga kali",
+      "Tayamum 2 kali basuhan wajah dan tangan",
+      "Mencuci anggota wudhu sebanyak 7 kali",
+      "Mandi biasa menggunakan sabun wangi tanpa niat khusus"
+    ],
+    answer: 0
+  },
+  {
+    id: 5,
+    category: "Thaharah",
+    question: "Dalam keadaan tidak ada air atau sakit yang melarang terkena air, tayamum dijadikan sebagai pengganti wudhu/mandi. Anggota tubuh yang diusap saat tayamum adalah...",
+    options: [
+      "Wajah, kedua tangan hingga siku, dan kedua kaki",
+      "Wajah dan kedua tangan sampai pergelangan atau siku",
+      "Wajah, telinga, dan kepala",
+      "Kedua tangan dan kedua kaki saja",
+      "Wajah, kedua tangan, dan mengusap sebagian kepala"
+    ],
+    answer: 1
+  },
+  {
+    id: 6,
+    category: "Thaharah",
+    question: "Apabila bayi laki-laki yang belum makan apapun selain ASI kencing di pakaian kita, najis ini tergolong najis mukhaffafah. Cara menyucikannya adalah...",
+    options: [
+      "Mencuci pakaian tersebut sampai air rembesannya jernih",
+      "Memercikkan air bersih pada tempat yang terkena kencing hingga basah",
+      "Mencuci 7 kali menggunakan sabun",
+      "Mengusap pakaian dengan tanah suci",
+      "Merendam pakaian dalam larutan disinfektan"
+    ],
+    answer: 1
+  },
+  {
+    id: 7,
+    category: "Thaharah",
+    question: "Sesuai rukun wudhu, tindakan yang dilakukan setelah membasuh kedua tangan sampai siku adalah...",
+    options: [
+      "Membasuh kedua kaki sampai mata kaki",
+      "Mengusap sebagian kepala atau rambut",
+      "Membuat kumur-kumur tiga kali",
+      "Mencuci kedua telapak tangan",
+      "Mengusap kedua daun telinga"
+    ],
+    answer: 1
+  },
+  {
+    id: 8,
+    category: "Thaharah",
+    question: "Ukuran air 2 (dua) qullah menurut hitungan liter modern yang sering dijadikan standar kecukupan air tidak mudah terkena najis adalah sekitar...",
+    options: [
+      "100 Liter",
+      "150 Liter",
+      "270 Liter (atau sekitar 216-270 Liter)",
+      "500 Liter",
+      "1000 Liter"
+    ],
+    answer: 2
+  },
+  {
+    id: 9,
+    category: "Thaharah",
+    question: "Berikut ini yang BUKAN merupakan hal-hal yang membatalkan wudhu menurut fikih Madzhab Syafi'i adalah...",
+    options: [
+      "Keluar sesuatu dari dua pintu (kubul dan dubur)",
+      "Tidur nyenyak dalam posisi terlentang",
+      "Hilang akal karena mabuk atau gila",
+      "Makan daging kambing yang diolah sampai matang",
+      "Sentuhan kulit laki-laki dan perempuan bukan mahram tanpa pembatas"
+    ],
+    answer: 3
+  },
+  {
+    id: 10,
+    category: "Thaharah",
+    question: "Darah haid, nifas, dan pus (nanah) yang keluar dari tubuh tergolong najis...",
+    options: [
+      "Mukhaffafah",
+      "Mutawassithah",
+      "Mughallazhah",
+      "Ma'fu (dimaafkan secara mutlak)",
+      "Syadidha"
+    ],
+    answer: 1
+  },
+
+  // SHALAT (10 Soal)
+  {
+    id: 11,
+    category: "Shalat",
+    question: "Shalat merupakan rukun Islam kedua. Rukun shalat terbagi menjadi rukun qawli, fi'li, dan qalbi. Di bawah ini yang termasuk rukun qawli adalah...",
+    options: [
+      "Ruku' dan I'tidal",
+      "Membaca Surah Al-Fatihah dan Takbiratul Ihram",
+      "Sujud dua kali dengan tuma'ninah",
+      "Duduk di antara dua sujud",
+      "Niat di dalam hati saat takbir"
+    ],
+    answer: 1
+  },
+  {
+    id: 12,
+    category: "Shalat",
+    question: "Dalam pelaksanaan ruku' dan sujud, wajib ada tuma'ninah. Pengertian tuma'ninah yang benar adalah...",
+    options: [
+      "Membaca doa ruku' sebanyak 10 kali",
+      "Diam sejenak sekadar mengucapkan 'Subhanallah' sebelum berpindah gerakan",
+      "Melakukan gerakan shalat dengan kecepatan maksimal",
+      "Berdiri tegak sambil memejamkan mata",
+      "Mengingat seluruh ingatan duniawi"
+    ],
+    answer: 1
+  },
+  {
+    id: 13,
+    category: "Shalat",
+    question: "Seseorang lupa melaksanakan sujud pertama pada rakaat kedua dan langsung berdiri ke rakaat ketiga. Apa yang harus dilakukannya ketika teringat sebelum salam?",
+    options: [
+      "Melanjutkan shalat dan melakukan Sujud Sahwi sebelum salam",
+      "Membatalkan shalat lalu mengulang dari rakaat pertama",
+      "Cukup membaca istighfar 3 kali di akhir shalat",
+      "Sujud Tilawah dua kali",
+      "Tidak perlu melakukan apa-apa karena tidak sengaja"
+    ],
+    answer: 0
+  },
+  {
+    id: 14,
+    category: "Shalat",
+    question: "Syarat sah shalat harus dipenuhi sebelum seseorang memulai shalat. Yang tergolong syarat sah shalat adalah...",
+    options: [
+      "Membaca ayat pendek setelah Al-Fatihah",
+      "Menutup aurat dan menghadap kiblat",
+      "Membaca doa qunut pada shalat subuh",
+      "Mengangkat tangan saat takbiratul ihram",
+      "Duduk tawarruk pada tasyahud akhir"
+    ],
+    answer: 1
+  },
+  {
+    id: 15,
+    category: "Shalat",
+    question: "Ahmad sedang bepergian jauh dari Jakarta ke Surabaya (jarak >81 km). Ia menggabungkan shalat Dzuhur dan Ashar dilaksanakan pada waktu Dzuhur masing-masing 2 rakaat. Bentuk shalat ini disebut...",
+    options: [
+      "Jamak Takhir Qashar",
+      "Jamak Taqdim Qashar",
+      "Shalat Hajat",
+      "Shalat Qadha",
+      "Shalat Mutlaq"
+    ],
+    answer: 1
+  },
+  {
+    id: 16,
+    category: "Shalat",
+    question: "Batas aurat bagi laki-laki dalam melaksanakan shalat menurut mayoritas ulama fikih adalah...",
+    options: [
+      "Seluruh anggota tubuh kecuali wajah dan telapak tangan",
+      "Antara pusat (pusar) sampai dengan kedua lutut",
+      "Dari leher sampai mata kaki",
+      "Hanya bagian organ vital saja",
+      "Seluruh tubuh tanpa terkecuali"
+    ],
+    answer: 1
+  },
+  {
+    id: 17,
+    category: "Shalat",
+    question: "Perhatikan pernyataan: (1) Islam, (2) Baligh, (3) Berakal, (4) Suci dari haid/nifas. Pernyataan tersebut merupakan...",
+    options: [
+      "Syarat wajib shalat",
+      "Syarat sah shalat",
+      "Rukun fi'li shalat",
+      "Sunnah ab'adh shalat",
+      "Pembatal shalat"
+    ],
+    answer: 0
+  },
+  {
+    id: 18,
+    category: "Shalat",
+    question: "Makmum masbuq adalah makmum yang terlambat bergabung dengan imam. Jika makmum masbuq mendapati imam sedang ruku' dan sempat ikut ruku' secara tuma'ninah, maka makmum tersebut...",
+    options: [
+      "Dianggap kehilangan rakaat tersebut",
+      "Mendapatkan rakaat tersebut dan tidak perlu menambahnya kelak",
+      "Harus mengulang shalat dari awal",
+      "Wajib membayar fidyah rakaat",
+      "Harus melakukan sujud sahwi sendiri"
+    ],
+    answer: 1
+  },
+  {
+    id: 19,
+    category: "Shalat",
+    question: "Apabila seorang imam batal shalatnya di rakaat ketiga karena kentut, maka tindakan yang tepat bagi jamaah adalah...",
+    options: [
+      "Seluruh jamaah ikut membubarkan shalatnya",
+      "Salah satu jamaah di belakang imam maju menggantikan posisi imam (Istikhlaf)",
+      "Jamaah berteriak memberi tahu kesalahan imam",
+      "Melanjutkan shalat sendiri-sendiri tanpa imam baru secara spontan",
+      "Menunggu imam berwudhu kembali di tempat sujud"
+    ],
+    answer: 1
+  },
+  {
+    id: 20,
+    category: "Shalat",
+    question: "Sujud Sahwi dilakukan karena adanya keraguan jumlah rakaat atau meninggalkan sunnah ab'adh. Tata cara sujud sahwi yang benar adalah...",
+    options: [
+      "Dua kali sujud sebelum salam disertai niat dan bacaan khusus",
+      "Satu kali sujud setelah membaca surat Al-Fatihah",
+      "Tiga kali sujud di luar shalat",
+      "Sujud dengan membelakangi kiblat",
+      "Berdiri kembali lalu sujud satu kali"
+    ],
+    answer: 0
+  },
+
+  // SHALAT SUNNAH (10 Soal)
+  {
+    id: 21,
+    category: "Shalat Sunnah",
+    question: "Shalat sunnah yang dikerjakan sebagai pengiring shalat fardhu, baik sebelum (qabliyah) maupun sesudah (ba'diyyah) dinamakan...",
+    options: [
+      "Shalat Sunnah Muakkad",
+      "Shalat Sunnah Rawatib",
+      "Shalat Sunnah Tahiyyatul Masjid",
+      "Shalat Sunnah Istikharah",
+      "Shalat Sunnah Mutlaq"
+    ],
+    answer: 1
+  },
+  {
+    id: 22,
+    category: "Shalat Sunnah",
+    question: "Shalat sunnah 2 rakaat yang sangat dianjurkan untuk menghormati masjid saat seseorang baru saja memasukinya sebelum ia duduk adalah...",
+    options: [
+      "Shalat Dhuha",
+      "Shalat Tahiyyatul Masjid",
+      "Shalat Hajat",
+      "Shalat Ishraq",
+      "Shalat Awwabin"
+    ],
+    answer: 1
+  },
+  {
+    id: 23,
+    category: "Shalat Sunnah",
+    question: "Shalat sunnah yang dilakukan pada malam hari setelah bangun tidur (walaupun tidur sejenak) dinamakan Shalat Tahajjud. Shalat ini tergolong shalat...",
+    options: [
+      "Qiyamul Lail",
+      "Rawatib Ghairu Muakkad",
+      "Shalat Kusuf",
+      "Shalat Istisqa",
+      "Shalat Tarawih"
+    ],
+    answer: 0
+  },
+  {
+    id: 24,
+    category: "Shalat Sunnah",
+    question: "Ketika terjadi kemarau panjang dan kekeringan tanah, umat Islam disunnahkan melaksanakan Shalat Istisqa secara berjamaah untuk...",
+    options: [
+      "Memohon dihindarkan dari bencana gempa",
+      "Memohon diturunkan hujan yang berkah",
+      "Meminta petunjuk dalam memilih pemimpin",
+      "Memohon ampun atas gerhana matahari",
+      "Meringankan beban siksa kubur"
+    ],
+    answer: 1
+  },
+  {
+    id: 25,
+    category: "Shalat Sunnah",
+    question: "Shalat sunnah Dhuha dikerjakan pada waktu pagi hari sejak matahari terbit setinggi tombak hingga menjelang waktu dzuhur. Manfaat utama shalat Dhuha di antaranya...",
+    options: [
+      "Sebagai pembuka pintu rezeki dan kelapangan hidup",
+      "Pengganti shalat fardhu yang ditinggalkan",
+      "Syarat agar doa mimpi menjadi kenyataan",
+      "Menghilangkan status musafir",
+      "Menjamin kelulusan ujian sekolah tanpa belajar"
+    ],
+    answer: 0
+  },
+  {
+    id: 26,
+    category: "Shalat Sunnah",
+    question: "Shalat sunnah yang dikerjakan saat terjadi peristiwa gerhana bulan dinamakan Shalat...",
+    options: [
+      "Kusuf",
+      "Khusuf",
+      "Istisqa",
+      "Tarawih",
+      "Witir"
+    ],
+    answer: 1 // Khusuf (Bulan), Kusuf (Matahari)
+  },
+  {
+    id: 27,
+    category: "Shalat Sunnah",
+    question: "Jumlah rakaat shalat Witir dilakukan dalam bilangan ganjil. Jumlah rakaat minimal dan maksimal shalat Witir adalah...",
+    options: [
+      "Minimal 1 rakaat dan maksimal 11 rakaat",
+      "Minimal 2 rakaat dan maksimal 8 rakaat",
+      "Minimal 3 rakaat dan maksimal 23 rakaat",
+      "Minimal 4 rakaat dan maksimal 12 rakaat",
+      "Harus selalu 3 rakaat tidak boleh kurang atau lebih"
+    ],
+    answer: 0
+  },
+  {
+    id: 28,
+    category: "Shalat Sunnah",
+    question: "Shalat sunnah yang dikhususkan pada malam bulan Ramadhan setelah melaksanakan shalat Isya adalah...",
+    options: [
+      "Shalat Idul Fitri",
+      "Shalat Tarawih",
+      "Shalat Tasbih",
+      "Shalat Hajat",
+      "Shalat Taubat"
+    ],
+    answer: 1
+  },
+  {
+    id: 29,
+    category: "Shalat Sunnah",
+    question: "Ketika seseorang dihadapkan pada dua pilihan keputusan hidup yang membingungkan dan membutuhkan petunjuk Allah, disunnahkan mengerjakan...",
+    options: [
+      "Shalat Istikharah",
+      "Shalat Hajat",
+      "Shalat Taubat",
+      "Shalat Mutlaq",
+      "Shalat Wudhu"
+    ],
+    answer: 0
+  },
+  {
+    id: 30,
+    category: "Shalat Sunnah",
+    question: "Ciri khas utama dalam pelaksanaan Shalat Kusuf (Gerhana Matahari) di mana berbeda dari shalat sunnah biasa adalah...",
+    options: [
+      "Dilakukan tanpa sujud",
+      "Memiliki dua kali ruku' dan dua kali berdiri bacaan Al-Fatihah dalam setiap rakaatnya",
+      "Dilaksanakan secara diam tanpa suara (sirri)",
+      "Dilakukan sambil berjalan",
+      "Tidak menggunakan takbiratul ihram"
+    ],
+    answer: 1
+  },
+
+  // MENYEMBELIH (10 Soal)
+  {
+    id: 31,
+    category: "Menyembelih",
+    question: "Penyembelihan hewan dalam Islam bertujuan agar daging hewan tersebut halal dikonsumsi. Bagian tubuh hewan yang WAJIB terputus saat penyembelihan adalah...",
+    options: [
+      "Hanya kulit leher dan urat lidah",
+      "Hulqum (saluran napas) dan Mari' (saluran makanan) serta dua urat leher (Wadajain)",
+      "Kepala hewan dipotong hingga terpisah penuh dari badan",
+      "Tulang leher bagian belakang",
+      "Hanya pembuluh darah sebelah kanan saja"
+    ],
+    answer: 1
+  },
+  {
+    id: 32,
+    category: "Menyembelih",
+    question: "Alat yang digunakan untuk menyembelih hewan harus tajam. Di bawah ini jenis alat yang DILARANG digunakan untuk menyembelih hewan adalah...",
+    options: [
+      "Pisau besi stainless steel",
+      "Pedang dari baja",
+      "Kaca atau bambu yang dipertajam",
+      "Tulang, gigi, dan kuku",
+      "Batu tajam yang dihaluskan"
+    ],
+    answer: 3
+  },
+  {
+    id: 33,
+    category: "Menyembelih",
+    question: "Sebelum menggoreskan pisau pada leher hewan kurban, hal utama yang wajib dibaca oleh penyembelih menurut syariat adalah...",
+    options: [
+      "Membaca Doa Selamat",
+      "Membaca Basmalah ('Bismillahi Allahu Akbar')",
+      "Membaca Surat Al-Ikhlas 3 kali",
+      "Membaca Kidung Pembuka",
+      "Membaca Ayat Kursi"
+    ],
+    answer: 1
+  },
+  {
+    id: 34,
+    category: "Menyembelih",
+    question: "Syarat bagi orang yang menyembelih hewan agar hasil sembelihannya halal dikonsumsi antara lain...",
+    options: [
+      "Harus seorang kiai atau pejabat desa",
+      "Berakal sehat, Muslim atau Ahli Kitab (sesuai ketentuan syar'i)",
+      "Memiliki sertifikat penyembelih internasional",
+      "Harus orang yang sedang berpuasa",
+      "Sudah pernah menunaikan ibadah haji"
+    ],
+    answer: 1
+  },
+  {
+    id: 35,
+    category: "Menyembelih",
+    question: "Ibnu menyembelih seekor ayam dengan mengasah pisau di depan mata ayam tersebut dan menguliti ayam saat ayam belum dingin/mati sempurna. Hukum perbuatan Ibnu tersebut tergolong...",
+    options: [
+      "Haram dan menyebabkan dagingnya najis",
+      "Makruh karena menyiksa hewan yang disembelih",
+      "Sunnah muakkad",
+      "Mubah tanpa dosa",
+      "Wajib dalam tradisi lokal"
+    ],
+    answer: 1
+  },
+  {
+    id: 36,
+    category: "Menyembelih",
+    question: "Penyembelihan hewan berupa kambing/domba sebagai bentuk rasa syukur atas kelahiran bayi dinamakan Aqiqah. Ketentuan jumlah kambing untuk bayi laki-laki dan perempuan adalah...",
+    options: [
+      "Laki-laki 1 ekor, Perempuan 2 ekor",
+      "Laki-laki 2 ekor, Perempuan 1 ekor",
+      "Sama-sama 2 ekor",
+      "Sama-sama 1 ekor",
+      "Laki-laki 3 ekor, Perempuan tidak wajib"
+    ],
+    answer: 1
+  },
+  {
+    id: 37,
+    category: "Menyembelih",
+    question: "Hewan kurban (Udhhiyah) disembelih pada Hari Raya Idul Adha dan Hari Tasyrik. Tanggal berapakah Hari Tasyrik tersebut dalam kalender Hijriah?",
+    options: [
+      "1, 2, dan 3 Syawal",
+      "11, 12, dan 13 Dzulhijjah",
+      "1, 2, dan 3 Muharram",
+      "14, 15, dan 16 Ramadhan",
+      "27, 28, dan 29 Rajab"
+    ],
+    answer: 1
+  },
+  {
+    id: 38,
+    category: "Menyembelih",
+    question: "Berikut adalah syarat hewan yang sah dijadikan hewan kurban, KECUALI...",
+    options: [
+      "Termasuk hewan ternak (Bahimatul An'am: Sapi, Kambing, Unta)",
+      "Cukup umur (misal kambing minimal 1-2 tahun)",
+      "Sehat, tidak buta, tidak pincang, dan tidak kurus kering",
+      "Hewan hasil curian yang penting gemuk",
+      "Milik sendiri secara sah"
+    ],
+    answer: 3
+  },
+  {
+    id: 39,
+    category: "Menyembelih",
+    question: "Cara mendudukkan atau merebahkan hewan sembelihan yang sesuai sunnah adalah dihadapkan ke arah...",
+    options: [
+      "Arah Utara",
+      "Arah Kiblat (Makkah)",
+      "Arah Matahari Terbit (Timur)",
+      "Arah Barat Laut",
+      "Bebas ke mana saja"
+    ],
+    answer: 1
+  },
+  {
+    id: 40,
+    category: "Menyembelih",
+    question: "Daging hewan kurban disunnahkan dibagikan dalam kondisi mentah, sedangkan daging aqiqah disunnahkan dibagikan dalam kondisi...",
+    options: [
+      "Masih hidup bersama kandangnya",
+      "Sudah dimasak matang (manis/lezat)",
+      "Mentah tanpa dipotong",
+      "Kering/diasinkan",
+      "Dibakar menjadi abu"
+    ],
+    answer: 1
+  },
+
+  // ADZAN DAN IQAMAH (10 Soal)
+  {
+    id: 41,
+    category: "Adzan & Iqamah",
+    question: "Secara bahasa, Adzan berarti pemberitahuan atau panggilan. Menurut istilah syariat, Adzan adalah...",
+    options: [
+      "Lafal khutbah Jumat sebelum shalat",
+      "Panggilan khusus menggunakan lafal syar'i untuk memberitahukan masuknya waktu shalat fardhu",
+      "Bacaan doa puji-pujian sebelum tidur",
+      "Ayat Al-Qur'an yang dilantunkan saat peringatan hari besar",
+      "Pengumuman berita duka warga desa"
+    ],
+    answer: 1
+  },
+  {
+    id: 42,
+    category: "Adzan & Iqamah",
+    question: "Lafal 'Ash-shalatu khairum minan-naum' (Shalat itu lebih baik daripada tidur) hanya diucapkan pada seruan Adzan...",
+    options: [
+      "Dzuhur",
+      "Subuh",
+      "Maghrib",
+      "Isya",
+      "Jumat"
+    ],
+    answer: 1
+  },
+  {
+    id: 43,
+    category: "Adzan & Iqamah",
+    question: "Perbedaan utama antara Adzan dan Iqamah dari segi fungsi dan lafal adalah...",
+    options: [
+      "Adzan dipandangkan oleh wanita, Iqamah oleh pria",
+      "Adzan sebagai pertanda masuk waktu shalat, sedangkan Iqamah pertanda shalat berjamaah segera dimulai",
+      "Iqamah dilantunkan dengan nada mendayu-dayu sangat lambat",
+      "Adzan tidak memerlukan wudhu",
+      "Iqamah dibaca 100 kali"
+    ],
+    answer: 1
+  },
+  {
+    id: 44,
+    category: "Adzan & Iqamah",
+    question: "Orang yang mengumandangkan Adzan dinamakan Muadzin. Syarat sah seorang Muadzin adalah...",
+    options: [
+      "Seorang laki-laki Muslim, berakal sehat, dan mumayyiz",
+      "Wajib bergelar Sarjana Agama",
+      "Minimal berusia 50 tahun",
+      "Harus kepala desa setempat",
+      "Wanita dewasa untuk jamaah laki-laki"
+    ],
+    answer: 0
+  },
+  {
+    id: 45,
+    category: "Adzan & Iqamah",
+    question: "Ketika mendengar suara muadzin mengumandangkan 'Hayya 'alas-Shalah', lafal jawaban yang disunnahkan bagi pendengar adalah...",
+    options: [
+      "Subhanallah walhamdulillah",
+      "Laa haula wa laa quwwata illa billahil 'aliyyil 'azhim",
+      "Sadaqta wa bararta",
+      "Allahu Akbar Allahu Akbar",
+      "Astaghfirullahal 'azhim"
+    ],
+    answer: 1
+  },
+  {
+    id: 46,
+    category: "Adzan & Iqamah",
+    question: "Begitu pula ketika mendengar lafal 'Hayya 'alal-Falah', hendaknya kita menjawab dengan bacaan...",
+    options: [
+      "Laa haula wa laa quwwata illa billahil 'aliyyil 'azhim",
+      "Wa ana 'ala zalika minash-shahidin",
+      "Alhamdulillahirabbil 'alamin",
+      "Marhaban bizzikri",
+      "Lailahaillallah"
+    ],
+    answer: 0
+  },
+  {
+    id: 47,
+    category: "Adzan & Iqamah",
+    question: "Dalam lafal Iqamah terdapat kalimat tambahan yang menandakan imam dan jamaah siap berdiri, yaitu...",
+    options: [
+      "Ash-shalatu khairum minan naum",
+      "Qad qaamatis-shalah, qad qaamatis-shalah",
+      "Hayya 'alal-Jihad",
+      "Subhana Rabbiyal 'Azhimi wa bihamdih",
+      "Astaghfirullahal 'azhim"
+    ],
+    answer: 1
+  },
+  {
+    id: 48,
+    category: "Adzan & Iqamah",
+    question: "Disunnahkan memanjatkan doa setelah selesai mendengar Adzan. Salah satu keutamaan membaca doa setelah adzan adalah...",
+    options: [
+      "Mendapatkan syafaat Nabi Muhammad SAW di hari kiamat",
+      "Diberikan kekayaan harta seketika",
+      "Bebas dari kewajiban shalat fardhu",
+      "Menjadi imam shalat secara otomatis",
+      "Dapat melihat malaikat secara langsung"
+    ],
+    answer: 0
+  },
+  {
+    id: 49,
+    category: "Adzan & Iqamah",
+    question: "Sunnah-sunnah dalam mengumandangkan adzan antara lain adalah...",
+    options: [
+      "Berdiri menghadap Kiblat, suci dari hadas, serta memasukkan jari telunjuk ke telinga",
+      "Membaca adzan sambil duduk santai di lantai",
+      "Berlari-lari mengelilingi masjid",
+      "Adzan membelakangi kiblat",
+      "Membaca adzan dalam bahasa daerah lokal saja"
+    ],
+    answer: 0
+  },
+  {
+    id: 50,
+    category: "Adzan & Iqamah",
+    question: "Waktu antarantara selesai Adzan dan dilakukannya Iqamah merupakan salah satu waktu yang paling ijabah (makbul) untuk...",
+    options: [
+      "Tidur lelap di serambi masjid",
+      "Berdoa kepada Allah SWT karena doa tidak ditolak di antara adzan dan iqamah",
+      "Berjualan makanan di area masjid",
+      "Berdebat materi pelajaran",
+      "Membicarakan keburukan orang lain"
+    ],
+    answer: 1
+  }
+];
+
+// Helper Function: Shuffle Array (Fisher-Yates)
+function shuffleArray(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+export default function App() {
+  // --- STATE SYSTEM & NAVIGATION ---
+  // Screens: 'welcome', 'identity', 'exam', 'result', 'admin_login', 'admin_dashboard'
+  const [currentScreen, setCurrentScreen] = useState('welcome');
+  
+  // Participant Identity
+  const [participant, setParticipant] = useState({
+    name: '',
+    className: 'VII A',
+    examNumber: '',
+    year: '2026/2027'
+  });
+  const [identityError, setIdentityError] = useState('');
+
+  // Shuffled Exam Questions state
+  const [examQuestions, setExamQuestions] = useState([]);
+  const [currentQIndex, setCurrentQIndex] = useState(0);
+  const [userAnswers, setUserAnswers] = useState({}); // { qIndex: selectedOptionIndex }
+  const [flaggedQuestions, setFlaggedQuestions] = useState({}); // { qIndex: boolean }
+
+  // Timer: 90 Minutes = 5400 seconds
+  const EXAM_DURATION_SEC = 5400;
+  const [timeLeft, setTimeLeft] = useState(EXAM_DURATION_SEC);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [timerAlert, setTimerAlert] = useState(null); // '10min' or '5min'
+
+  // Exam Result
+  const [examResult, setExamResult] = useState(null);
+
+  // Admin Auth & Data
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminAuthError, setAdminAuthError] = useState('');
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [allSubmissions, setAllSubmissions] = useState([]);
+
+  // Admin Dashboard Filters & Search
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedClassFilter, setSelectedClassFilter] = useState('ALL');
+  const [sortOrder, setSortOrder] = useState('desc'); // 'desc' (high to low) or 'asc'
+
+  // Modals
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [selectedReportCandidate, setSelectedReportCandidate] = useState(null);
+
+  // --- INITIALIZATION & PERSISTENCE ---
+  useEffect(() => {
+    // Load stored submissions from local persistence
+    try {
+      const stored = localStorage.getItem('mts_fikih_2026_submissions');
+      if (stored) {
+        setAllSubmissions(JSON.parse(stored));
+      } else {
+        // Seed initial dummy submissions for realistic admin dashboard preview
+        const dummy = [
+          { id: 'SUB-101', name: 'Ahmad Fauzi', className: 'VII A', examNumber: 'RU6-001', score: 96, correct: 48, wrong: 2, unanswered: 0, date: '2026-05-10 08:30', stars: 2 },
+          { id: 'SUB-102', name: 'Siti Nurhaliza', className: 'VII B', examNumber: 'RU6-002', score: 100, correct: 50, wrong: 0, unanswered: 0, date: '2026-05-10 08:45', stars: 3 },
+          { id: 'SUB-103', name: 'Muhammad Rizky', className: 'VIII A', examNumber: 'RU6-003', score: 84, correct: 42, wrong: 8, unanswered: 0, date: '2026-05-10 09:00', stars: 1 },
+          { id: 'SUB-104', name: 'Fatimatuz Zahra', className: 'VIII B', examNumber: 'RU6-004', score: 68, correct: 34, wrong: 16, unanswered: 0, date: '2026-05-10 09:15', stars: 0 },
+          { id: 'SUB-105', name: 'Bahrul Ulum', className: 'IX A', examNumber: 'RU6-005', score: 92, correct: 46, wrong: 4, unanswered: 0, date: '2026-05-10 09:30', stars: 2 }
+        ];
+        setAllSubmissions(dummy);
+        localStorage.setItem('mts_fikih_2026_submissions', JSON.stringify(dummy));
+      }
+    } catch (e) {
+      console.error("Local storage error:", e);
+    }
+
+    // Check draft exam progress
+    const draftState = localStorage.getItem('mts_fikih_2026_draft_session');
+    if (draftState) {
+      try {
+        const parsed = JSON.parse(draftState);
+        if (parsed && parsed.participant && parsed.userAnswers) {
+          setParticipant(parsed.participant);
+          setExamQuestions(parsed.examQuestions);
+          setUserAnswers(parsed.userAnswers);
+          setFlaggedQuestions(parsed.flaggedQuestions || {});
+          setTimeLeft(parsed.timeLeft || EXAM_DURATION_SEC);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  }, []);
+
+  // Save current progress automatically
+  useEffect(() => {
+    if (currentScreen === 'exam' && examQuestions.length > 0) {
+      const draft = {
+        participant,
+        examQuestions,
+        userAnswers,
+        flaggedQuestions,
+        timeLeft
+      };
+      localStorage.setItem('mts_fikih_2026_draft_session', JSON.stringify(draft));
+    }
+  }, [userAnswers, flaggedQuestions, timeLeft, currentScreen]);
+
+  // --- TIMER EFFECT ---
+  useEffect(() => {
+    let timerInterval = null;
+    if (isTimerRunning && currentScreen === 'exam') {
+      timerInterval = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerInterval);
+            handleAutoSubmitExam();
+            return 0;
+          }
+          // Alerts
+          if (prev === 600) setTimerAlert('Sisa waktu pengerjaan 10 menit!');
+          if (prev === 300) setTimerAlert('Sisa waktu pengerjaan 5 menit! Periksa kembali jawaban Anda.');
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timerInterval);
+  }, [isTimerRunning, currentScreen]);
+
+  // --- HANDLERS & EXAM LOGIC ---
+
+  // Start Identity Setup
+  const handleStartProcess = () => {
+    setCurrentScreen('identity');
+  };
+
+  // Prepare and Launch Exam
+  const handleLaunchExam = (e) => {
+    e.preventDefault();
+    if (!participant.name.trim() || !participant.examNumber.trim()) {
+      setIdentityError('Harap lengkapi Nama Lengkap dan Nomor Peserta Ujian.');
+      return;
+    }
+
+    // Check duplicate exam number
+    const isDuplicate = allSubmissions.some(
+      sub => sub.examNumber.toLowerCase() === participant.examNumber.trim().toLowerCase()
+    );
+
+    if (isDuplicate) {
+      setIdentityError(`Nomor Peserta Ujian "${participant.examNumber}" sudah pernah menyelesaikan asesmen. Pengiriman ganda tidak diizinkan.`);
+      return;
+    }
+
+    setIdentityError('');
+
+    // Prepare randomized questions & options for this candidate
+    const preparedQuestions = QUESTIONS_DATA.map(q => {
+      // Map original option index to track correct answer
+      const optionsWithMeta = q.options.map((optText, origIdx) => ({
+        text: optText,
+        isCorrect: origIdx === q.answer
+      }));
+      // Shuffle options
+      const shuffledOpts = shuffleArray(optionsWithMeta);
+      const newCorrectIdx = shuffledOpts.findIndex(opt => opt.isCorrect);
+
+      return {
+        id: q.id,
+        category: q.category,
+        question: q.question,
+        options: shuffledOpts.map(o => o.text),
+        correctAnswer: newCorrectIdx
+      };
+    });
+
+    // Shuffle question order
+    const finalQuestions = shuffleArray(preparedQuestions);
+
+    setExamQuestions(finalQuestions);
+    setUserAnswers({});
+    setFlaggedQuestions({});
+    setTimeLeft(EXAM_DURATION_SEC);
+    setCurrentQIndex(0);
+    setIsTimerRunning(true);
+    setCurrentScreen('exam');
+  };
+
+  // Option selection
+  const handleSelectOption = (qIdx, optIdx) => {
+    setUserAnswers(prev => ({
+      ...prev,
+      [qIdx]: optIdx
+    }));
+  };
+
+  // Toggle flag / ragu-ragu
+  const handleToggleFlag = (qIdx) => {
+    setFlaggedQuestions(prev => ({
+      ...prev,
+      [qIdx]: !prev[qIdx]
+    }));
+  };
+
+  // Auto Submit when time runs out
+  const handleAutoSubmitExam = () => {
+    setIsTimerRunning(false);
+    calculateAndSaveResults();
+  };
+
+  // Manual Submit
+  const handleConfirmSubmit = () => {
+    setShowSubmitModal(false);
+    setIsTimerRunning(false);
+    calculateAndSaveResults();
+  };
+
+  // Grade Calculation
+  const calculateAndSaveResults = () => {
+    let correctCount = 0;
+    let wrongCount = 0;
+    let unansweredCount = 0;
+
+    examQuestions.forEach((q, idx) => {
+      const selected = userAnswers[idx];
+      if (selected === undefined || selected === null) {
+        unansweredCount++;
+      } else if (selected === q.correctAnswer) {
+        correctCount++;
+      } else {
+        wrongCount++;
+      }
+    });
+
+    // Score calculation: 50 questions * 2 = 100 max
+    const finalScore = correctCount * 2;
+    
+    // Star Rating
+    let stars = 0;
+    let message = "";
+    if (finalScore === 100) {
+      stars = 3;
+      message = "Masyaallah! Luar biasa! Kamu berhasil mendapatkan nilai sempurna. Pertahankan semangat menuntut ilmu dan teruslah menjadi pribadi yang berprestasi.";
+    } else if (finalScore >= 91) {
+      stars = 2;
+      message = "Alhamdulillah! Hasil yang sangat membanggakan. Pertahankan prestasimu dan terus tingkatkan kemampuan belajar.";
+    } else if (finalScore >= 70) {
+      stars = 1;
+      message = "Alhamdulillah, kamu sudah berusaha dengan baik. Terus tingkatkan pemahaman dan jangan berhenti belajar.";
+    } else {
+      stars = 0;
+      message = "Jangan menyerah! Kegagalan bukan akhir dari perjalanan. Jadikan hasil ini sebagai motivasi untuk belajar lebih giat. Terus berusaha, berdoa, dan yakinlah bahwa kamu bisa meraih hasil yang lebih baik.";
+    }
+
+    const resultPayload = {
+      id: 'SUB-' + Date.now().toString().slice(-6),
+      name: participant.name,
+      className: participant.className,
+      examNumber: participant.examNumber,
+      year: participant.year,
+      score: finalScore,
+      correct: correctCount,
+      wrong: wrongCount,
+      unanswered: unansweredCount,
+      stars: stars,
+      message: message,
+      date: new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
+    };
+
+    setExamResult(resultPayload);
+
+    // Persist to all submissions
+    const updated = [resultPayload, ...allSubmissions];
+    setAllSubmissions(updated);
+    localStorage.setItem('mts_fikih_2026_submissions', JSON.stringify(updated));
+
+    // Clear active draft session
+    localStorage.removeItem('mts_fikih_2026_draft_session');
+
+    setCurrentScreen('result');
+  };
+
+  // Format Seconds to MM:SS
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // --- ADMIN AUTH & ACTIONS ---
+  const handleAdminLogin = (e) => {
+    e.preventDefault();
+    if (adminPassword === 'admin2026' || adminPassword === 'ru6fikih') {
+      setIsAdminLoggedIn(true);
+      setAdminAuthError('');
+      setCurrentScreen('admin_dashboard');
+    } else {
+      setAdminAuthError('Kata sandi admin tidak valid!');
+    }
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdminLoggedIn(false);
+    setAdminPassword('');
+    setCurrentScreen('welcome');
+  };
+
+  const handleDeleteSubmission = (id) => {
+    const updated = allSubmissions.filter(s => s.id !== id);
+    setAllSubmissions(updated);
+    localStorage.setItem('mts_fikih_2026_submissions', JSON.stringify(updated));
+  };
+
+  // Export CSV
+  const handleExportCSV = () => {
+    if (allSubmissions.length === 0) return;
+    
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "ID,Nama Peserta,Kelas,No Peserta,Benar,Salah,Kosong,Nilai Akhir,Bintang,Waktu Pengumpulan\n";
+
+    allSubmissions.forEach(row => {
+      csvContent += `"${row.id}","${row.name}","${row.className}","${row.examNumber}",${row.correct},${row.wrong},${row.unanswered},${row.score},${row.stars},"${row.date}"\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Hasil_Asesmen_Fikih_2026_MTs_RU6_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Filtered & Sorted Submissions for Admin Table
+  const filteredSubmissions = useMemo(() => {
+    return allSubmissions.filter(sub => {
+      const matchSearch = sub.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          sub.examNumber.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchClass = selectedClassFilter === 'ALL' || sub.className === selectedClassFilter;
+      return matchSearch && matchClass;
+    }).sort((a, b) => {
+      return sortOrder === 'desc' ? b.score - a.score : a.score - b.score;
+    });
+  }, [allSubmissions, searchTerm, selectedClassFilter, sortOrder]);
+
+  // Admin Analytics Statistics
+  const stats = useMemo(() => {
+    if (allSubmissions.length === 0) {
+      return { total: 0, avg: 0, highest: 0, lowest: 0, highCount: 0, medCount: 0, lowCount: 0 };
+    }
+    const scores = allSubmissions.map(s => s.score);
+    const total = scores.length;
+    const avg = (scores.reduce((a, b) => a + b, 0) / total).toFixed(1);
+    const highest = Math.max(...scores);
+    const lowest = Math.min(...scores);
+    
+    const highCount = scores.filter(s => s >= 86).length; // 86 - 100
+    const medCount = scores.filter(s => s >= 70 && s <= 85).length; // 70 - 85
+    const lowCount = scores.filter(s => s < 70).length; // 0 - 69
+
+    return { total, avg, highest, lowest, highCount, medCount, lowCount };
+  }, [allSubmissions]);
+
+
+  // =========================================================================
+  // RENDER SCREENS
+  // =========================================================================
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col selection:bg-emerald-500 selection:text-white">
+      
+      {/* GLOBAL NAVBAR / HEADER */}
+      <header className="bg-emerald-950 text-white border-b-4 border-amber-400 shadow-lg sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setCurrentScreen('welcome')}>
+            {/* Logo Emblem */}
+            <div className="w-12 h-12 bg-gradient-to-tr from-amber-400 to-amber-200 rounded-full flex items-center justify-center text-emerald-950 font-bold shadow-md border-2 border-white">
+              <GraduationCap className="w-7 h-7" />
+            </div>
+            <div>
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-amber-300 uppercase leading-none font-serif">
+                MTs Raudlatul Ulum VI
+              </h1>
+              <p className="text-xs sm:text-sm text-emerald-200 font-medium tracking-wide">
+                Asesmen Fikih Online • Tahun 2026
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            {currentScreen !== 'admin_dashboard' && !isAdminLoggedIn && (
+              <button
+                onClick={() => setCurrentScreen('admin_login')}
+                className="inline-flex items-center space-x-2 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg bg-emerald-800 hover:bg-emerald-700 text-amber-200 border border-emerald-600 transition shadow-sm"
+              >
+                <Shield className="w-4 h-4" />
+                <span>Portal Guru/Admin</span>
+              </button>
+            )}
+
+            {isAdminLoggedIn && (
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setCurrentScreen('admin_dashboard')}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-500 hover:bg-amber-600 text-emerald-950 transition"
+                >
+                  Dashboard Admin
+                </button>
+                <button
+                  onClick={handleAdminLogout}
+                  className="p-1.5 rounded-lg bg-red-700 hover:bg-red-800 text-white transition"
+                  title="Keluar Admin"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* TIMER ALERT OVERLAY */}
+      {timerAlert && (
+        <div className="bg-amber-500 text-emerald-950 px-4 py-2 text-center font-bold text-sm flex items-center justify-center space-x-2 shadow-md animate-bounce">
+          <AlertTriangle className="w-5 h-5" />
+          <span>{timerAlert}</span>
+          <button onClick={() => setTimerAlert(null)} className="ml-4 underline text-xs">Tutup</button>
+        </div>
+      )}
+
+      {/* MAIN CONTAINER CONTENT */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        {/* ------------------------------------------------------------------ */}
+        {/* SCREEN A: HALAMAN PEMBUKA / WELCOME SCREEN */}
+        {/* ------------------------------------------------------------------ */}
+        {currentScreen === 'welcome' && (
+          <div className="max-w-4xl mx-auto space-y-8 py-6">
+            
+            {/* Header Hero Card */}
+            <div className="bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 rounded-2xl p-6 sm:p-10 text-white text-center shadow-xl border border-emerald-700 relative overflow-hidden">
+              {/* Islamic Pattern Backdrop Overlay */}
+              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
+
+              <div className="relative z-10 flex flex-col items-center space-y-4">
+                {/* Official Logo Slot Placeholder */}
+                <div className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-full p-2 border-2 border-amber-400 shadow-inner flex items-center justify-center">
+                  <div className="w-full h-full rounded-full border border-dashed border-amber-300/60 flex flex-col items-center justify-center text-amber-300">
+                    <BookOpen className="w-10 h-10 mb-1" />
+                    <span className="text-[9px] uppercase font-bold text-center leading-tight">MA/PP Raudlatul Firdaus</span>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <h3 className="text-amber-300 text-sm sm:text-base font-semibold tracking-widest uppercase">
+                    YAYASAN PONDOK PESANTREN RAUDLATUL FIRDAUS
+                  </h3>
+                  <h2 className="text-2xl sm:text-4xl font-extrabold font-serif tracking-tight text-white">
+                    MTs RAUDLATUL ULUM VI
+                  </h2>
+                </div>
+
+                <div className="w-24 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent my-2"></div>
+
+                <div className="py-2 px-6 bg-amber-400/20 border border-amber-400/40 rounded-full text-amber-300 font-bold text-lg sm:text-xl font-serif">
+                  ASESMEN FIKIH ONLINE 2026
+                </div>
+
+                <p className="text-emerald-200 text-sm">
+                  Tahun Ajaran 2026/2027 • Asesmen Pembelajaran Madrasah Tsanawiyah
+                </p>
+              </div>
+            </div>
+
+            {/* Quranic Verse Box */}
+            <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-md border border-emerald-100 text-center space-y-4">
+              <div className="text-emerald-800 font-serif text-xl sm:text-2xl font-bold tracking-wide">
+                بِسْمِ اللَّهِ الرَّحْمٰنِ الرَّحِيْمِ
+              </div>
+              
+              <div className="space-y-3 bg-amber-50/60 p-5 rounded-xl border border-amber-200/60">
+                <p className="text-right text-emerald-950 font-serif text-lg sm:text-xl leading-loose" dir="rtl">
+                  يَرْفَعِ اللّٰهُ الَّذِيْنَ اٰمَنُوْا مِنْكُمْۙ وَالَّذِيْنَ اُوْتُوا الْعِلْمَ دَرَجٰتٍۗ
+                </p>
+                <p className="text-xs sm:text-sm text-slate-600 font-serif italic">
+                  "Niscaya Allah akan meninggikan orang-orang yang beriman di antaramu dan orang-orang yang diberi ilmu pengetahuan beberapa derajat."
+                </p>
+                <p className="text-xs font-bold text-emerald-800 tracking-wider">
+                  (QS. Al-Mujadilah [58]: 11)
+                </p>
+              </div>
+
+              {/* Information Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left pt-2">
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-start space-x-3">
+                  <div className="p-2 bg-emerald-100 text-emerald-800 rounded-lg">
+                    <BookOpen className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-500 uppercase">Jumlah Soal</div>
+                    <div className="text-sm font-semibold text-slate-800">50 Soal Pilihan Ganda</div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-start space-x-3">
+                  <div className="p-2 bg-amber-100 text-amber-800 rounded-lg">
+                    <Clock className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-500 uppercase">Alokasi Waktu</div>
+                    <div className="text-sm font-semibold text-slate-800">90 Menit</div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-start space-x-3">
+                  <div className="p-2 bg-teal-100 text-teal-800 rounded-lg">
+                    <Layers className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-500 uppercase">Materi Ujian</div>
+                    <div className="text-xs font-semibold text-slate-800">Thaharah, Shalat, Sunnah, Sembelih, Adzan</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Start Button */}
+              <div className="pt-4">
+                <button
+                  onClick={handleStartProcess}
+                  className="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-200 inline-flex items-center justify-center space-x-3 border border-emerald-500"
+                >
+                  <span>MULAI ASESMEN</span>
+                  <ChevronRight className="w-6 h-6 text-amber-300" />
+                </button>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------------ */}
+        {/* SCREEN B: IDENTITAS PESERTA / FORM IDENTITAS */}
+        {/* ------------------------------------------------------------------ */}
+        {currentScreen === 'identity' && (
+          <div className="max-w-xl mx-auto bg-white rounded-2xl shadow-xl border border-emerald-100 overflow-hidden my-6">
+            <div className="bg-gradient-to-r from-emerald-900 to-emerald-800 p-6 text-white text-center">
+              <GraduationCap className="w-12 h-12 text-amber-300 mx-auto mb-2" />
+              <h2 className="text-xl font-bold font-serif text-amber-300">Pengisian Identitas Peserta</h2>
+              <p className="text-xs text-emerald-200">Isi data diri Anda dengan teliti dan benar sebelum memulai asesmen.</p>
+            </div>
+
+            <form onSubmit={handleLaunchExam} className="p-6 sm:p-8 space-y-5">
+              {identityError && (
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start space-x-3 text-red-700 text-xs sm:text-sm">
+                  <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <span>{identityError}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                  Nama Lengkap Peserta <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: Muhammad Ali Ridho"
+                  value={participant.name}
+                  onChange={(e) => setParticipant({ ...participant, name: e.target.value })}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm font-medium outline-none transition"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                    Kelas <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={participant.className}
+                    onChange={(e) => setParticipant({ ...participant, className: e.target.value })}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm font-medium outline-none transition bg-white"
+                  >
+                    <option value="VII A">VII A</option>
+                    <option value="VII B">VII B</option>
+                    <option value="VIII A">VIII A</option>
+                    <option value="VIII B">VIII B</option>
+                    <option value="IX A">IX A</option>
+                    <option value="IX B">IX B</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                    Nomor Peserta Ujian <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: RU6-2026-001"
+                    value={participant.examNumber}
+                    onChange={(e) => setParticipant({ ...participant, examNumber: e.target.value })}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm font-medium outline-none transition"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                  Tahun Ajaran
+                </label>
+                <input
+                  type="text"
+                  readOnly
+                  value={participant.year}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-100 text-slate-500 text-sm font-medium cursor-not-allowed"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-between space-x-4">
+                <button
+                  type="button"
+                  onClick={() => setCurrentScreen('welcome')}
+                  className="px-5 py-3 rounded-lg border border-slate-300 text-slate-600 font-semibold text-sm hover:bg-slate-100 transition"
+                >
+                  Kembali
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-6 py-3 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow-md transition flex items-center justify-center space-x-2"
+                >
+                  <span>Masuk Lembar Soal</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------------ */}
+        {/* SCREEN C & D: LEAMBAR SOAL ASESMEN & NAVIGASI UJIAN */}
+        {/* ------------------------------------------------------------------ */}
+        {currentScreen === 'exam' && examQuestions.length > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            
+            {/* MAIN QUESTION AREA (3 Cols) */}
+            <div className="lg:col-span-3 space-y-6">
+              
+              {/* Question Header Status */}
+              <div className="bg-white rounded-xl p-4 shadow-sm border border-emerald-100 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center space-x-3">
+                  <span className="px-3 py-1 bg-emerald-100 text-emerald-800 font-bold rounded-lg text-sm">
+                    Soal No. {currentQIndex + 1} / {examQuestions.length}
+                  </span>
+                  <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200">
+                    Kategori: {examQuestions[currentQIndex].category}
+                  </span>
+                </div>
+
+                {/* Flag / Ragu-ragu Checkbox */}
+                <button
+                  onClick={() => handleToggleFlag(currentQIndex)}
+                  className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg border text-xs font-bold transition ${
+                    flaggedQuestions[currentQIndex]
+                      ? 'bg-amber-500 text-white border-amber-600'
+                      : 'bg-slate-50 text-slate-600 border-slate-300 hover:bg-slate-100'
+                  }`}
+                >
+                  <Bookmark className="w-4 h-4" />
+                  <span>{flaggedQuestions[currentQIndex] ? 'Ragu-Ragu (Tersimpan)' : 'Tandai Ragu-Ragu'}</span>
+                </button>
+              </div>
+
+              {/* Question Card */}
+              <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-md border border-slate-200 space-y-6">
+                <div className="text-base sm:text-lg text-slate-800 font-medium leading-relaxed">
+                  {examQuestions[currentQIndex].question}
+                </div>
+
+                {/* Answer Options list (A - E) */}
+                <div className="space-y-3 pt-2">
+                  {examQuestions[currentQIndex].options.map((optionText, optIdx) => {
+                    const isSelected = userAnswers[currentQIndex] === optIdx;
+                    const optionLetters = ['A', 'B', 'C', 'D', 'E'];
+
+                    return (
+                      <button
+                        key={optIdx}
+                        onClick={() => handleSelectOption(currentQIndex, optIdx)}
+                        className={`w-full text-left p-4 rounded-xl border-2 transition flex items-start space-x-4 ${
+                          isSelected
+                            ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 font-semibold shadow-sm'
+                            : 'border-slate-200 bg-white hover:border-emerald-300 hover:bg-slate-50 text-slate-700'
+                        }`}
+                      >
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 transition ${
+                          isSelected ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 border border-slate-300'
+                        }`}>
+                          {optionLetters[optIdx]}
+                        </div>
+                        <div className="pt-1 text-sm sm:text-base leading-snug">
+                          {optionText}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Question Navigation Controls Footer */}
+              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                <button
+                  disabled={currentQIndex === 0}
+                  onClick={() => setCurrentQIndex(prev => Math.max(0, prev - 1))}
+                  className="px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center space-x-2"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Sebelumnya</span>
+                </button>
+
+                {currentQIndex < examQuestions.length - 1 ? (
+                  <button
+                    onClick={() => setCurrentQIndex(prev => Math.min(examQuestions.length - 1, prev + 1))}
+                    className="px-6 py-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-sm transition flex items-center space-x-2 shadow-sm"
+                  >
+                    <span>Selanjutnya</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowSubmitModal(true)}
+                    className="px-6 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-emerald-950 font-bold text-sm transition shadow-md flex items-center space-x-2"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Kumpulkan Jawaban</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* SIDEBAR NAVIGATION & TIMER (1 Col) */}
+            <div className="space-y-6">
+              
+              {/* Timer Box */}
+              <div className="bg-gradient-to-br from-emerald-950 to-emerald-900 text-white p-5 rounded-2xl shadow-md border border-emerald-700 text-center space-y-2">
+                <div className="text-xs font-bold text-emerald-300 uppercase tracking-wider flex items-center justify-center space-x-2">
+                  <Clock className="w-4 h-4 text-amber-400" />
+                  <span>Sisa Waktu Ujian</span>
+                </div>
+                <div className={`text-3xl font-extrabold font-mono tracking-wider ${timeLeft < 600 ? 'text-amber-400 animate-pulse' : 'text-white'}`}>
+                  {formatTime(timeLeft)}
+                </div>
+                <div className="text-[11px] text-emerald-300">Waktu otomatis submit jika habis</div>
+              </div>
+
+              {/* Candidate Quick Badge */}
+              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-xs space-y-1">
+                <div className="text-slate-400 font-bold uppercase">Peserta Asesmen</div>
+                <div className="font-bold text-slate-800 text-sm truncate">{participant.name}</div>
+                <div className="text-slate-500">Kelas: {participant.className} • No: {participant.examNumber}</div>
+              </div>
+
+              {/* Question Grid Navigator */}
+              <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase text-slate-600">Navigasi Nomor Soal</h4>
+                  <span className="text-xs text-slate-500 font-semibold">
+                    {Object.keys(userAnswers).length} / {examQuestions.length} Diisi
+                  </span>
+                </div>
+
+                {/* Grid legend */}
+                <div className="grid grid-cols-3 gap-2 text-[10px] font-semibold text-slate-600 pb-2 border-b">
+                  <div className="flex items-center space-x-1">
+                    <span className="w-3 h-3 bg-emerald-600 rounded"></span>
+                    <span>Sudah</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <span className="w-3 h-3 bg-slate-200 rounded border"></span>
+                    <span>Belum</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <span className="w-3 h-3 bg-amber-500 rounded"></span>
+                    <span>Ragu</span>
+                  </div>
+                </div>
+
+                {/* 50 Question Buttons Grid */}
+                <div className="grid grid-cols-5 gap-2 max-h-72 overflow-y-auto p-1">
+                  {examQuestions.map((_, idx) => {
+                    const isAnswered = userAnswers[idx] !== undefined;
+                    const isFlagged = flaggedQuestions[idx];
+                    const isCurrent = currentQIndex === idx;
+
+                    let btnStyle = "bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200";
+                    if (isFlagged) {
+                      btnStyle = "bg-amber-500 text-white font-bold border-amber-600";
+                    } else if (isAnswered) {
+                      btnStyle = "bg-emerald-600 text-white font-bold border-emerald-700";
+                    }
+
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentQIndex(idx)}
+                        className={`h-9 rounded-lg text-xs font-semibold flex items-center justify-center transition relative border ${btnStyle} ${
+                          isCurrent ? 'ring-2 ring-amber-400 ring-offset-2' : ''
+                        }`}
+                      >
+                        {idx + 1}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Complete Submission Button */}
+                <button
+                  onClick={() => setShowSubmitModal(true)}
+                  className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-emerald-950 font-bold rounded-xl text-xs sm:text-sm shadow-md transition flex items-center justify-center space-x-2"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Selesaikan & Kirim</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------------ */}
+        {/* SCREEN E, F, G: HALAMAN HASIL SISWA & REWARD BINTANG */}
+        {/* ------------------------------------------------------------------ */}
+        {currentScreen === 'result' && examResult && (
+          <div className="max-w-2xl mx-auto space-y-6 py-6">
+            
+            {/* Main Result Card */}
+            <div className="bg-white rounded-3xl shadow-xl border border-emerald-100 overflow-hidden text-center">
+              
+              {/* Header Gradient */}
+              <div className="bg-gradient-to-b from-emerald-950 via-emerald-900 to-emerald-800 p-8 text-white space-y-3 relative">
+                <div className="inline-block px-4 py-1 bg-amber-400/20 border border-amber-400/40 rounded-full text-amber-300 text-xs font-bold uppercase tracking-wider">
+                  Hasil Asesmen Fikih 2026
+                </div>
+                <h2 className="text-2xl font-bold font-serif text-white">{examResult.name}</h2>
+                <p className="text-xs text-emerald-200">
+                  Kelas: {examResult.className} • No. Peserta: {examResult.examNumber}
+                </p>
+
+                {/* Score Big Badge */}
+                <div className="py-6 flex flex-col items-center justify-center">
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-amber-400 to-amber-200 text-emerald-950 flex flex-col items-center justify-center shadow-2xl border-4 border-white">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-900">NILAI AKHIR</span>
+                    <span className="text-4xl font-black font-serif">{examResult.score}</span>
+                    <span className="text-[9px] font-semibold text-emerald-800">DARI 100</span>
+                  </div>
+                </div>
+
+                {/* STAR AWARD SYSTEM DISPLAY */}
+                <div className="flex items-center justify-center space-x-2 pt-2">
+                  {[1, 2, 3].map((starNum) => (
+                    <Star
+                      key={starNum}
+                      className={`w-8 h-8 transition-all transform ${
+                        starNum <= examResult.stars
+                          ? 'text-amber-400 fill-amber-400 scale-110 drop-shadow-md'
+                          : 'text-emerald-800 fill-emerald-950 opacity-40'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <div className="text-xs text-amber-300 font-semibold tracking-wide">
+                  {examResult.stars === 3 && "Penghargaan: 3 Bintang Emas (Sempurna)"}
+                  {examResult.stars === 2 && "Penghargaan: 2 Bintang Emas (Sangat Baik)"}
+                  {examResult.stars === 1 && "Penghargaan: 1 Bintang Emas (Baik)"}
+                  {examResult.stars === 0 && "Tetap Semangat & Terus Belajar!"}
+                </div>
+              </div>
+
+              {/* Motivation & Stat Summary Body */}
+              <div className="p-6 sm:p-8 space-y-6">
+                
+                {/* Motivation Box */}
+                <div className="bg-amber-50 border border-amber-200 p-5 rounded-2xl text-left space-y-2">
+                  <div className="flex items-center space-x-2 text-amber-800 font-bold text-sm">
+                    <Sparkles className="w-5 h-5 text-amber-500" />
+                    <span>Pesan & Motivasi Guru:</span>
+                  </div>
+                  <p className="text-sm text-slate-700 italic leading-relaxed">
+                    "{examResult.message}"
+                  </p>
+                </div>
+
+                {/* Detailed Breakdown Cards */}
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-200">
+                    <div className="text-xs font-bold text-emerald-800 uppercase">Jawaban Benar</div>
+                    <div className="text-2xl font-black text-emerald-700 mt-1">{examResult.correct}</div>
+                    <div className="text-[10px] text-emerald-600 font-semibold">+ {examResult.correct * 2} Poin</div>
+                  </div>
+
+                  <div className="bg-red-50 p-4 rounded-xl border border-red-200">
+                    <div className="text-xs font-bold text-red-800 uppercase">Jawaban Salah</div>
+                    <div className="text-2xl font-black text-red-700 mt-1">{examResult.wrong}</div>
+                    <div className="text-[10px] text-red-600 font-semibold">0 Poin</div>
+                  </div>
+
+                  <div className="bg-slate-100 p-4 rounded-xl border border-slate-200">
+                    <div className="text-xs font-bold text-slate-600 uppercase">Tidak Diisi</div>
+                    <div className="text-2xl font-black text-slate-700 mt-1">{examResult.unanswered}</div>
+                    <div className="text-[10px] text-slate-500 font-semibold">0 Poin</div>
+                  </div>
+                </div>
+
+                {/* Privacy & Anti-Cheating Note */}
+                <div className="p-4 bg-slate-50 rounded-xl text-xs text-slate-500 border border-slate-200 text-center">
+                  <Lock className="w-4 h-4 mx-auto mb-1 text-slate-400" />
+                  Jawaban telah tersimpan secara permanen di database server MTs Raudlatul Ulum VI.
+                </div>
+
+                {/* Return Home Button */}
+                <div className="pt-2">
+                  <button
+                    onClick={() => setCurrentScreen('welcome')}
+                    className="w-full py-3.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center space-x-2"
+                  >
+                    <Home className="w-4 h-4" />
+                    <span>Selesai & Kembali ke Beranda</span>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------------ */}
+        {/* SCREEN ADMIN LOGIN MODAL */}
+        {/* ------------------------------------------------------------------ */}
+        {currentScreen === 'admin_login' && (
+          <div className="max-w-md mx-auto bg-white rounded-2xl shadow-xl border border-emerald-100 overflow-hidden my-12">
+            <div className="bg-emerald-950 p-6 text-white text-center space-y-2">
+              <Shield className="w-10 h-10 text-amber-400 mx-auto" />
+              <h3 className="text-lg font-bold font-serif text-amber-300">Autentikasi Guru / Admin</h3>
+              <p className="text-xs text-emerald-300">Masukan kata sandi untuk mengelola data hasil asesmen.</p>
+            </div>
+
+            <form onSubmit={handleAdminLogin} className="p-6 space-y-4">
+              {adminAuthError && (
+                <div className="bg-red-50 text-red-700 p-3 rounded-lg text-xs font-semibold border border-red-200">
+                  {adminAuthError}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                  Kata Sandi Admin
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Masukan Sandi (Default: admin2026)"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none"
+                />
+              </div>
+
+              <div className="p-3 bg-amber-50 rounded-lg text-[11px] text-amber-900 border border-amber-200">
+                <span className="font-bold">Info Demo:</span> Gunakan password <code className="bg-amber-200 px-1 rounded font-bold">admin2026</code> untuk membuka dashboard.
+              </div>
+
+              <div className="flex space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrentScreen('welcome')}
+                  className="w-1/2 py-2.5 rounded-lg border border-slate-300 text-slate-600 font-semibold text-xs hover:bg-slate-100"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="w-1/2 py-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md"
+                >
+                  Masuk Dashboard
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------------ */}
+        {/* SCREEN H & I: DASHBOARD ADMIN & DIAGRAM ANALISIS */}
+        {/* ------------------------------------------------------------------ */}
+        {currentScreen === 'admin_dashboard' && isAdminLoggedIn && (
+          <div className="space-y-8 py-4">
+            
+            {/* Dashboard Header Banner */}
+            <div className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-900 text-white rounded-2xl p-6 shadow-lg flex flex-wrap items-center justify-between gap-4 border border-emerald-700">
+              <div>
+                <div className="text-amber-300 text-xs font-bold uppercase tracking-wider">PANEL GURU FIKIH & ADMIN</div>
+                <h2 className="text-xl sm:text-2xl font-bold font-serif">Dashboard Analisis Asesmen Fikih 2026</h2>
+                <p className="text-xs text-emerald-200 mt-1">MTs Raudlatul Ulum VI • Rekapitulasi Real-Time Hasil Peserta Ujian</p>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={handleExportCSV}
+                  className="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-amber-300 rounded-xl text-xs font-bold border border-emerald-600 transition flex items-center space-x-2 shadow-sm"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Unduh Excel / CSV</span>
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-emerald-950 rounded-xl text-xs font-bold transition flex items-center space-x-2 shadow-sm"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Cetak Laporan</span>
+                </button>
+              </div>
+            </div>
+
+            {/* ANALYTICS STATISTICAL CARDS */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                <div className="text-xs font-bold uppercase text-slate-400 flex items-center justify-between">
+                  <span>Total Peserta</span>
+                  <Users className="w-4 h-4 text-emerald-600" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-black text-slate-800">{stats.total}</div>
+                <div className="text-[11px] text-emerald-600 font-semibold">Selesai Mengerjakan</div>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                <div className="text-xs font-bold uppercase text-slate-400 flex items-center justify-between">
+                  <span>Rata-Rata Nilai</span>
+                  <BarChart3 className="w-4 h-4 text-blue-600" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-black text-slate-800">{stats.avg}</div>
+                <div className="text-[11px] text-slate-500">Skala 0 - 100</div>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                <div className="text-xs font-bold uppercase text-slate-400 flex items-center justify-between">
+                  <span>Nilai Tertinggi</span>
+                  <Award className="w-4 h-4 text-amber-500" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-black text-amber-600">{stats.highest}</div>
+                <div className="text-[11px] text-amber-700 font-semibold">Skor Maksimal</div>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                <div className="text-xs font-bold uppercase text-slate-400 flex items-center justify-between">
+                  <span>Nilai Terendah</span>
+                  <AlertCircle className="w-4 h-4 text-red-500" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-black text-slate-700">{stats.lowest}</div>
+                <div className="text-[11px] text-slate-500">Evaluasi Pembelajaran</div>
+              </div>
+            </div>
+
+            {/* ------------------------------------------------------------------ */}
+            {/* SECTION I: DIAGRAM VISUAL ANALISIS HASIL */}
+            {/* ------------------------------------------------------------------ */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              
+              {/* Category Bar Chart Visual */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-4">
+                <h3 className="text-sm font-bold uppercase text-slate-700 flex items-center space-x-2">
+                  <BarChart3 className="w-5 h-5 text-emerald-700" />
+                  <span>Distribusi Kategori Kemampuan</span>
+                </h3>
+
+                <div className="space-y-4 pt-2">
+                  {/* TINGGI */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span className="text-emerald-800">TINGGI (Nilai 86 - 100)</span>
+                      <span className="text-slate-600">{stats.highCount} Siswa ({stats.total > 0 ? Math.round((stats.highCount/stats.total)*100) : 0}%)</span>
+                    </div>
+                    <div className="w-full h-4 bg-slate-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-emerald-600 transition-all duration-500"
+                        style={{ width: `${stats.total > 0 ? (stats.highCount/stats.total)*100 : 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  {/* SEDANG */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span className="text-amber-800">SEDANG (Nilai 70 - 85)</span>
+                      <span className="text-slate-600">{stats.medCount} Siswa ({stats.total > 0 ? Math.round((stats.medCount/stats.total)*100) : 0}%)</span>
+                    </div>
+                    <div className="w-full h-4 bg-slate-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-amber-500 transition-all duration-500"
+                        style={{ width: `${stats.total > 0 ? (stats.medCount/stats.total)*100 : 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  {/* RENDAH */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span className="text-red-800">RENDAH (Nilai 0 - 69)</span>
+                      <span className="text-slate-600">{stats.lowCount} Siswa ({stats.total > 0 ? Math.round((stats.lowCount/stats.total)*100) : 0}%)</span>
+                    </div>
+                    <div className="w-full h-4 bg-slate-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-red-500 transition-all duration-500"
+                        style={{ width: `${stats.total > 0 ? (stats.lowCount/stats.total)*100 : 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pie Chart / Summary Card */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between space-y-4">
+                <h3 className="text-sm font-bold uppercase text-slate-700 flex items-center space-x-2">
+                  <PieChart className="w-5 h-5 text-amber-600" />
+                  <span>Ringkasan Ketuntasan Belajar</span>
+                </h3>
+
+                <div className="flex items-center justify-center py-4">
+                  {/* Pure CSS Radial Progress Ring */}
+                  <div className="relative w-40 h-40 rounded-full bg-slate-100 flex items-center justify-center border-8 border-emerald-600 shadow-inner">
+                    <div className="text-center">
+                      <div className="text-3xl font-black text-slate-800">
+                        {stats.total > 0 ? Math.round(((stats.highCount + stats.medCount)/stats.total)*100) : 0}%
+                      </div>
+                      <div className="text-[10px] font-bold text-emerald-800 uppercase">Tuntas (≥ 70)</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-center text-xs">
+                  <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-200">
+                    <div className="text-emerald-800 font-bold">Lulus / Tuntas</div>
+                    <div className="text-base font-bold text-emerald-900">{stats.highCount + stats.medCount} Siswa</div>
+                  </div>
+                  <div className="p-2 bg-red-50 rounded-lg border border-red-200">
+                    <div className="text-red-800 font-bold">Perlu Remedial</div>
+                    <div className="text-base font-bold text-red-900">{stats.lowCount} Siswa</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* DATA TABLE FOR CANDIDATES */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden space-y-4 p-6">
+              
+              {/* Controls & Filters Bar */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <h3 className="text-base font-bold text-slate-800">Daftar Nilai Peserta Asesmen</h3>
+
+                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                  {/* Search Input */}
+                  <div className="relative flex-1 sm:w-64">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                    <input
+                      type="text"
+                      placeholder="Cari nama atau nomor..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
+                    />
+                  </div>
+
+                  {/* Filter Class */}
+                  <select
+                    value={selectedClassFilter}
+                    onChange={(e) => setSelectedClassFilter(e.target.value)}
+                    className="px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 outline-none bg-white"
+                  >
+                    <option value="ALL">Semua Kelas</option>
+                    <option value="VII A">VII A</option>
+                    <option value="VII B">VII B</option>
+                    <option value="VIII A">VIII A</option>
+                    <option value="VIII B">VIII B</option>
+                    <option value="IX A">IX A</option>
+                    <option value="IX B">IX B</option>
+                  </select>
+
+                  {/* Sort Order */}
+                  <button
+                    onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+                    className="px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+                  >
+                    Urutan: {sortOrder === 'desc' ? 'Terlengkap (Tinggi)' : 'Terrendah'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Table Container */}
+              <div className="overflow-x-auto border rounded-xl border-slate-200">
+                <table className="w-full text-left text-xs text-slate-700">
+                  <thead className="bg-slate-100 text-slate-600 font-bold uppercase border-b border-slate-200">
+                    <tr>
+                      <th className="p-3.5">No</th>
+                      <th className="p-3.5">Nama Peserta</th>
+                      <th className="p-3.5">Kelas</th>
+                      <th className="p-3.5">No. Peserta</th>
+                      <th className="p-3.5 text-center">B/S/K</th>
+                      <th className="p-3.5 text-center">Nilai</th>
+                      <th className="p-3.5 text-center">Bintang</th>
+                      <th className="p-3.5">Waktu Submit</th>
+                      <th className="p-3.5 text-center">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {filteredSubmissions.length === 0 ? (
+                      <tr>
+                        <td colSpan="9" className="text-center p-8 text-slate-400">
+                          Belum ada data peserta yang sesuai.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredSubmissions.map((sub, idx) => (
+                        <tr key={sub.id} className="hover:bg-slate-50 transition">
+                          <td className="p-3.5 font-bold text-slate-500">{idx + 1}</td>
+                          <td className="p-3.5 font-bold text-slate-900">{sub.name}</td>
+                          <td className="p-3.5 font-semibold text-emerald-800">{sub.className}</td>
+                          <td className="p-3.5 font-mono text-slate-600">{sub.examNumber}</td>
+                          <td className="p-3.5 text-center font-semibold">
+                            <span className="text-emerald-700">{sub.correct}</span> / <span className="text-red-600">{sub.wrong}</span> / <span className="text-slate-500">{sub.unanswered}</span>
+                          </td>
+                          <td className="p-3.5 text-center">
+                            <span className={`px-2.5 py-1 rounded-full font-extrabold ${
+                              sub.score >= 86 ? 'bg-emerald-100 text-emerald-800' :
+                              sub.score >= 70 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {sub.score}
+                            </span>
+                          </td>
+                          <td className="p-3.5 text-center">
+                            <div className="flex items-center justify-center space-x-0.5">
+                              {[1, 2, 3].map((s) => (
+                                <Star
+                                  key={s}
+                                  className={`w-3.5 h-3.5 ${s <= sub.stars ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`}
+                                />
+                              ))}
+                            </div>
+                          </td>
+                          <td className="p-3.5 text-slate-500">{sub.date}</td>
+                          <td className="p-3.5 text-center">
+                            <div className="flex items-center justify-center space-x-2">
+                              <button
+                                onClick={() => {
+                                  setSelectedReportCandidate(sub);
+                                  setShowPrintModal(true);
+                                }}
+                                className="p-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700"
+                                title="Lihat/Cetak Rapor"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteSubmission(sub.id)}
+                                className="p-1.5 bg-red-50 hover:bg-red-100 rounded-lg text-red-600"
+                                title="Hapus Data"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+
+          </div>
+        )}
+
+      </main>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* MODAL CONFIRMATION SUBMISSION */}
+      {/* ------------------------------------------------------------------ */}
+      {showSubmitModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-emerald-100">
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-800 font-serif">Konfirmasi Pengumpulan Jawaban</h3>
+              <p className="text-xs text-slate-600">
+                Apakah Anda yakin ingin menyelesaikan dan mengirimkan seluruh jawaban asesmen ini?
+              </p>
+            </div>
+
+            {/* Answered Stat Box */}
+            <div className="bg-slate-50 p-4 rounded-xl text-xs space-y-2 border border-slate-200">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Soal Dijawab:</span>
+                <span className="font-bold text-emerald-700">{Object.keys(userAnswers).length} dari 50 Soal</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Belum Dijawab:</span>
+                <span className="font-bold text-red-600">{50 - Object.keys(userAnswers).length} Soal</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Ditandai Ragu:</span>
+                <span className="font-bold text-amber-600">
+                  {Object.values(flaggedQuestions).filter(Boolean).length} Soal
+                </span>
+              </div>
+            </div>
+
+            <div className="text-[11px] text-slate-500 italic text-center">
+              Setelah dikirim, jawaban tidak dapat diubah kembali.
+            </div>
+
+            <div className="flex space-x-3 pt-2">
+              <button
+                onClick={() => setShowSubmitModal(false)}
+                className="w-1/2 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-100"
+              >
+                Periksa Kembali
+              </button>
+              <button
+                onClick={handleConfirmSubmit}
+                className="w-1/2 py-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md"
+              >
+                Ya, Kirim Sekarang
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* MODAL PRINT INDIVIDUAL REPORT (ADMIN) */}
+      {/* ------------------------------------------------------------------ */}
+      {showPrintModal && selectedReportCandidate && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-6 border border-emerald-100">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-base font-bold text-emerald-950 font-serif">Lembar Hasil Asesmen Peserta</h3>
+              <button onClick={() => setShowPrintModal(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div className="bg-emerald-950 text-white p-4 rounded-xl space-y-1">
+                <div className="text-amber-300 font-bold uppercase text-[10px]">MTs Raudlatul Ulum VI</div>
+                <div className="text-base font-bold">{selectedReportCandidate.name}</div>
+                <div>Kelas: {selectedReportCandidate.className} • No: {selectedReportCandidate.examNumber}</div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-center">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <div className="text-slate-400 font-bold uppercase text-[10px]">Nilai Akhir</div>
+                  <div className="text-3xl font-black text-emerald-800">{selectedReportCandidate.score}</div>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col items-center justify-center">
+                  <div className="text-slate-400 font-bold uppercase text-[10px]">Penghargaan</div>
+                  <div className="flex space-x-1 mt-1">
+                    {[1, 2, 3].map((st) => (
+                      <Star key={st} className={`w-4 h-4 ${st <= selectedReportCandidate.stars ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-xl space-y-1">
+                <div className="font-bold text-slate-700">Rincian Koreksi:</div>
+                <div>Jawaban Benar: <strong className="text-emerald-700">{selectedReportCandidate.correct}</strong></div>
+                <div>Jawaban Salah: <strong className="text-red-600">{selectedReportCandidate.wrong}</strong></div>
+                <div>Tidak Diisi: <strong className="text-slate-500">{selectedReportCandidate.unanswered}</strong></div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 pt-2">
+              <button
+                onClick={() => setShowPrintModal(false)}
+                className="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-600"
+              >
+                Tutup
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold flex items-center space-x-1"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Cetak Rapor Ini</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FOOTER */}
+      <footer className="bg-emerald-950 text-emerald-300 text-xs py-6 border-t-2 border-amber-400/40 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 text-center space-y-2">
+          <p className="font-serif">
+            © 2026 MTs Raudlatul Ulum VI - Yayasan Pondok Pesantren Raudlatul Firdaus
+          </p>
+          <p className="text-[11px] text-emerald-400/80">
+            Sistem Asesmen Fikih Online Terpadu • Berbasis Web Responsif & Autentikasi Server Safe
+          </p>
+        </div>
+      </footer>
+
+    </div>
+  );
+}
